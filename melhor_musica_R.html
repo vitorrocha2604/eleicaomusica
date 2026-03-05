@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎵 Eleição: Melhor Música com R</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --card2: #1a1a26;
+    --accent1: #ff4d6d;
+    --accent2: #4cc9f0;
+    --accent3: #f8961e;
+    --accent4: #7b2d8b;
+    --gold: #ffd60a;
+    --silver: #c0c0c0;
+    --bronze: #cd7f32;
+    --text: #f0f0f0;
+    --muted: #8888aa;
+    --border: rgba(255,255,255,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 60px 20px 40px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,77,109,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(76,201,240,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,77,109,0.15);
+    border: 1px solid rgba(255,77,109,0.4);
+    color: var(--accent1);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 99px;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.8rem, 8vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff 0%, #ff4d6d 50%, #4cc9f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 12px;
+    letter-spacing: 1px;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    padding: 0 20px 30px;
+    max-width: 900px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 130px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .stat-card.s1::before { background: var(--accent1); }
+  .stat-card.s2::before { background: var(--accent2); }
+  .stat-card.s3::before { background: var(--accent3); }
+  .stat-card.s4::before { background: var(--gold); }
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .s1 .stat-val { color: var(--accent1); }
+  .s2 .stat-val { color: var(--accent2); }
+  .s3 .stat-val { color: var(--accent3); }
+  .s4 .stat-val { color: var(--gold); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; }
+
+  /* MAIN GRID */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    display: grid;
+    gap: 20px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CANDIDATES */
+  .candidates { display: grid; gap: 10px; }
+  .candidate {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .candidate:hover { transform: translateX(4px); border-color: rgba(255,255,255,0.15); }
+  .candidate.winner { border-color: rgba(255,214,10,0.3); background: linear-gradient(135deg, #12121a, #1a1a10); }
+  .candidate.runner-up { border-color: rgba(76,201,240,0.3); background: linear-gradient(135deg, #12121a, #0a1520); }
+  .candidate .rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  .rank-1 { color: var(--gold); }
+  .rank-2 { color: var(--silver); }
+  .rank-3 { color: var(--bronze); }
+  .rank-other { color: var(--muted); }
+  .c-info { min-width: 0; }
+  .c-song { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-artist { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .c-rep { font-size: 11px; color: var(--accent2); margin-top: 2px; font-weight: 500; }
+  .c-meta { text-align: right; }
+  .c-votes { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; }
+  .rank-1 ~ * .c-votes, .candidate.winner .c-votes { color: var(--gold); }
+  .c-pct { font-size: 11px; color: var(--muted); }
+  .progress-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 3px;
+    border-radius: 0 0 14px 14px;
+    transition: width 1s ease;
+  }
+
+  /* CHARTS */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .chart-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* SECOND ROUND */
+  .second-round {
+    background: linear-gradient(135deg, #12121a, #1a0a1a);
+    border: 1px solid rgba(255,77,109,0.3);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .second-round::before {
+    content: '2º TURNO';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 8rem;
+    color: rgba(255,255,255,0.02);
+    letter-spacing: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .round-matchup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .round-fighter {
+    background: var(--card2);
+    border-radius: 14px;
+    padding: 20px 24px;
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+  .rf-rank { font-size: 24px; margin-bottom: 6px; }
+  .rf-song { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 1px; line-height: 1.2; }
+  .rf-artist { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .rf-votes { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-top: 10px; }
+  .rf-votes.gold { color: var(--gold); }
+  .rf-votes.silver { color: var(--silver); }
+  .vs-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--accent1);
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3);
+    border-radius: 50%;
+    width: 54px; height: 54px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* INSIGHTS */
+  .insights { display: grid; gap: 12px; }
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .i-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
+  .i-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .i-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .highlight { color: var(--accent1); font-weight: 700; }
+  .highlight2 { color: var(--accent2); font-weight: 700; }
+  .highlight3 { color: var(--gold); font-weight: 700; }
+
+  /* ABSTENTION */
+  .abstention-card {
+    background: var(--card);
+    border: 1px solid rgba(255,150,30,0.25);
+    border-radius: 16px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .abs-num { font-family: 'Bebas Neue', sans-serif; font-size: 4rem; color: var(--accent3); line-height: 1; }
+  .abs-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .abs-bar-wrap { background: rgba(255,255,255,0.05); border-radius: 8px; height: 10px; overflow: hidden; margin-top: 12px; }
+  .abs-bar { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--accent1), var(--accent3)); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; opacity: 0; }
+  .d1 { animation-delay: 0.1s; }
+  .d2 { animation-delay: 0.2s; }
+  .d3 { animation-delay: 0.3s; }
+  .d4 { animation-delay: 0.4s; }
+  .d5 { animation-delay: 0.5s; }
+  .d6 { animation-delay: 0.6s; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">🗳️ Resultado Final da Enquete</div>
+  <h1>MELHOR MÚSICA<br>COM A LETRA R</h1>
+  <p class="hero-sub">50 votos válidos · 140 pessoas no grupo · Março 2026</p>
+</div>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-card s1 animate d1">
+    <div class="stat-val">50</div>
+    <div class="stat-label">Votos totais</div>
+  </div>
+  <div class="stat-card s2 animate d2">
+    <div class="stat-val">6</div>
+    <div class="stat-label">Candidatos</div>
+  </div>
+  <div class="stat-card s3 animate d3">
+    <div class="stat-val">90</div>
+    <div class="stat-label">Abstenções</div>
+  </div>
+  <div class="stat-card s4 animate d4">
+    <div class="stat-val">34%</div>
+    <div class="stat-label">Participação</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- CANDIDATOS -->
+  <div class="animate d1">
+    <div class="section-title">🏆 Classificação Geral</div>
+    <div class="candidates" id="candidateList"></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="animate d2">
+    <div class="section-title">📊 Visualizações</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Distribuição de Votos</h3>
+        <canvas id="pieChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Votos por Candidato</h3>
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABSTENCAO -->
+  <div class="animate d3">
+    <div class="section-title">😴 Abstenção</div>
+    <div class="abstention-card">
+      <div>
+        <div class="abs-num">90</div>
+        <div class="abs-label">pessoas não votaram de 140 no grupo</div>
+        <div class="abs-bar-wrap" style="margin-top:14px;">
+          <div class="abs-bar" style="width:64.3%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--muted)">
+          <span>Votaram: 35.7% (50)</span>
+          <span>Não votaram: 64.3% (90)</span>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:3rem">😶</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--muted);margin-top:4px">64.3%<br>omissos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEGUNDO TURNO -->
+  <div class="animate d4">
+    <div class="section-title">⚡ 2º Turno</div>
+    <div class="second-round">
+      <p style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:20px;letter-spacing:1px">Os dois mais votados avançam para o confronto final</p>
+      <div class="round-matchup">
+        <div class="round-fighter">
+          <div class="rf-rank">🥇</div>
+          <div class="rf-song">Romance com Safadeza</div>
+          <div class="rf-artist">Wesley Safadão & Anitta</div>
+          <div class="rf-votes gold">17</div>
+          <div style="font-size:11px;color:var(--muted)">votos · 34%</div>
+          <div style="font-size:11px;color:var(--accent2);margin-top:6px;">Rep: Uilian</div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="round-fighter">
+          <div class="rf-rank">🥈</div>
+          <div class="rf-song">Rock and Roll All Night</div>
+          <div class="rf-artist">Kiss</div>
+          <div class="rf-votes silver">13</div>
+          <div style="font-size:11px;color:var(--muted)">votos · 26%</div>
+          <div style="font-size:11px;color:var(--accent2);margin-top:6px;">Rep: Rodrigo Soares</div>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:20px;">🔥 Junto, os finalistas somam <strong style="color:var(--text)">30 votos (60%)</strong> do total — domínio claro!</p>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="animate d5">
+    <div class="section-title">💡 Insights & Análise</div>
+    <div class="insights">
+      <div class="insight">
+        <div class="i-icon">🎯</div>
+        <div>
+          <div class="i-title">Vencedor isolado</div>
+          <div class="i-text"><span class="highlight3">Romance com Safadeza</span> dominou com 34% dos votos válidos e uma diferença de <span class="highlight">4 votos</span> para o segundo colocado. Vitória confortável, mas não esmagadora — o 2º turno será disputado.</div>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="i-icon">🎸</div>
+        <div>
+          <div class="i-title">Surpresa do Rock</div>
+          <div class="i-text"><span class="highlight2">Rock and Roll All Night</span> do Kiss conseguiu 13 votos — impressionante para um clássico do rock num grupo que claramente tem preferências diversas. Mostra que a base do grupo não é homogênea.</div>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="i-icon">⛪</div>
+        <div>
+          <div class="i-title">A surpresa religiosa</div>
+          <div class="i-text"><span class="highlight">Rompendo em Fé</span> ficou em 3º lugar com 8 votos (16%), mostrando uma presença significativa de público gospel no grupo. Um resultado acima do esperado para este nicho.</div>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="i-icon">👻</div>
+        <div>
+          <div class="i-title">Vitor Rocha e a Romaria</div>
+          <div class="i-text">A <span class="highlight">Romaria de Elis Regina</span> teve apenas 2 votos — e o próprio representante <span class="highlight2">Vitor Rocha não votou na música dele!</span> Um caso clássico de candidato que não apoia o próprio candidato. 😅</div>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="i-icon">😴</div>
+        <div>
+          <div class="i-title">Abstenção alarmante</div>
+          <div class="i-text">Com <span class="highlight">90 pessoas não votando</span> (64.3%), a enquete teve participação muito baixa. Se todos tivessem votado, o resultado poderia ser completamente diferente. A abstenção é maior que todos os votos juntos!</div>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="i-icon">📉</div>
+        <div>
+          <div class="i-title">Queda abrupta após o top 3</div>
+          <div class="i-text">Há uma queda brusca de votos após o 3º lugar: de 8 para 7, depois direto para 3 e 2. Isso sugere que os últimos 3 candidatos não tinham base de apoio consolidada no grupo.</div>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="i-icon">🤝</div>
+        <div>
+          <div class="i-title">Concentração de votos no topo</div>
+          <div class="i-text">Os dois finalistas (Romance + Rock) concentram <span class="highlight3">60% dos votos</span>. O top 3 sozinho representa <span class="highlight3">76%</span>. A disputa estava concentrada, com os demais muito atrás.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Eleição do Grupo · Melhor Música com R · Março 2026 · 6 candidatos · 140 membros
+</div>
+
+<script>
+const data = [
+  { song: "Romance com Safadeza", artist: "Wesley Safadão & Anitta", rep: "Uilian", votes: 17, color: "#ffd60a" },
+  { song: "Rock and Roll All Night", artist: "Kiss", rep: "Rodrigo Soares", votes: 13, color: "#4cc9f0" },
+  { song: "Rompendo em Fé", artist: "CEI da Zona Sul", rep: "Renato Sampaio", votes: 8, color: "#a855f7" },
+  { song: "Reiventar", artist: "Belo", rep: "Gustavo", votes: 7, color: "#f8961e" },
+  { song: "Rehab", artist: "Amy Winehouse", rep: "Robson Corodato", votes: 3, color: "#ff4d6d" },
+  { song: "Romaria", artist: "Elis Regina", rep: "Vitor Rocha ⚠️", votes: 2, color: "#8888aa" },
+];
+
+const total = data.reduce((s, d) => s + d.votes, 0);
+const ranks = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣"];
+const rankClasses = ["rank-1", "rank-2", "rank-3", "rank-other", "rank-other", "rank-other"];
+const voteColors = ["gold", "gold", "bronze", "muted", "muted", "muted"];
+
+const list = document.getElementById('candidateList');
+data.forEach((d, i) => {
+  const pct = ((d.votes / total) * 100).toFixed(1);
+  const barPct = ((d.votes / 17) * 100).toFixed(1);
+  const card = document.createElement('div');
+  card.className = `candidate ${i === 0 ? 'winner' : i === 1 ? 'runner-up' : ''}`;
+  card.innerHTML = `
+    <div class="rank ${rankClasses[i]}">${ranks[i]}</div>
+    <div class="c-info">
+      <div class="c-song">${d.song}</div>
+      <div class="c-artist">${d.artist}</div>
+      <div class="c-rep">👤 Rep: ${d.rep}</div>
+    </div>
+    <div class="c-meta">
+      <div class="c-votes" style="color:${d.color}">${d.votes}</div>
+      <div class="c-pct">${pct}%</div>
+    </div>
+    <div class="progress-bar" style="width:${barPct}%;background:${d.color}66;"></div>
+  `;
+  list.appendChild(card);
+});
+
+// PIE CHART
+const pie = new Chart(document.getElementById('pieChart'), {
+  type: 'doughnut',
+  data: {
+    labels: data.map(d => d.song.length > 18 ? d.song.slice(0,18)+'…' : d.song),
+    datasets: [{
+      data: data.map(d => d.votes),
+      backgroundColor: data.map(d => d.color),
+      borderColor: '#0a0a0f',
+      borderWidth: 3,
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    cutout: '62%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.parsed} votos (${((ctx.parsed/total)*100).toFixed(1)}%)`
+        }
+      }
+    }
+  }
+});
+
+// BAR CHART
+const bar = new Chart(document.getElementById('barChart'), {
+  type: 'bar',
+  data: {
+    labels: data.map(d => d.song.length > 12 ? d.song.slice(0,12)+'…' : d.song),
+    datasets: [{
+      data: data.map(d => d.votes),
+      backgroundColor: data.map(d => d.color + 'cc'),
+      borderColor: data.map(d => d.color),
+      borderWidth: 2,
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8888aa' } },
+      y: { grid: { display: false }, ticks: { color: '#cccccc', font: { size: 10 } } }
+    }
+  }
+});
+
+Chart.defaults.color = '#8888aa';
+</script>
+</body>
+</html>
